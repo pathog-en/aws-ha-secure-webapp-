@@ -47,8 +47,8 @@ A diagram of a highly secure and available AWS architecture
     - alarms can notify operators via SNS
     -  health checks ensure failed instances are replaced automaticaly
 # cost considerations:
-    NAT gw
-    security and availabilty over minimal cost
-    future optimization considerations
-      vpc gw eps to reduce NAT traffic
-      right size copmute resources based on load patterns
+    [] NAT gw
+    [X] Security and availabilty over minimal cost
+    [] Future optimization considerations
+    [] VPC gw eps to reduce NAT traffic
+    [] Right size compute resources based on load patterns
