@@ -140,6 +140,10 @@ resource "aws_route_table_association" "private_db" {
 # - Next step is NAT + private routes for egress.
 #############################################
 
+resource "aws_vpc" "sanity_check" {
+  cidr_block = "10.250.0.0/16"
+  tags = { Name = "tf-sanity-check" }
+}
 
 
 
