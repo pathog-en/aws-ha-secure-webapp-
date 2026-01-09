@@ -1,0 +1,14 @@
+.git
+**/.terraform
+**/terraform.tfstate*
+**/.terraform.lock.hcl
+**/.env
+**/.venv
+**/venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/node_modules
+**/dist
+**/build
+**/*.log

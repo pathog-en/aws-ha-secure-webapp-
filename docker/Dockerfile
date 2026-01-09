@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 6. Copy dependency files first (build cache efficiency)
-COPY requirements.txt .
+COPY app/requirements.txt ./requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
 
