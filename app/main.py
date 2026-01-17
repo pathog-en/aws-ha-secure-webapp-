@@ -1,16 +1,29 @@
 from fastapi import FastAPI, HTTPException
-
-app = FastAPI()
+from contextlib import asynccontextmanager
 
 # Track whether the app finished startup
 is_ready = False
 
 
-@app.on_event("startup")
-def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Lifespan handler replaces deprecated startup/shutdown events.
+    Code before `yield` runs at startup.
+    Code after `yield` runs at shutdown.
+    """
     global is_ready
-    # If this function completes, the app is considered ready
+
+    # ---- Startup logic ----
     is_ready = True
+
+    yield
+
+    # ---- Shutdown logic ----
+    is_ready = False
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")
@@ -24,4 +37,5 @@ def health():
         raise HTTPException(status_code=503, detail="service not ready")
 
     return {"status": "healthy"}
+
 
