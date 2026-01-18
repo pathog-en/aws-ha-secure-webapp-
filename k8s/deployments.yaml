@@ -19,6 +19,13 @@ spec:
           image: 698528536903.dkr.ecr.us-east-2.amazonaws.com/aws-ha-webapp:v1
           ports:
             - containerPort: 8000
+          env:
+            - name: APP_SECRET_KEY
+              value: "change-me-to-a-long-random-string"
+            - name: GAME_MIN
+              value: "1"
+            - name: GAME_MAX
+              value: "100"
           readinessProbe:
             httpGet:
               path: /health
@@ -31,3 +38,4 @@ spec:
               port: 8000
             initialDelaySeconds: 15
             periodSeconds: 20
+
