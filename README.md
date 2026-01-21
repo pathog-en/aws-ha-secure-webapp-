@@ -138,6 +138,10 @@ A highly available, AWS-native containerized web application demonstrating moder
   Deploy a managed database (RDS) in private subnets
   
   Introduce blue/green or canary deployments
+  
+## Current Deployment (as of 01/20/2026)
+- Image: aws-ha-webapp:45ac6a4a6b7d5f42aec5839fd5aed2b303949f82
+- Endpoints: /health, /game
 
 
 
