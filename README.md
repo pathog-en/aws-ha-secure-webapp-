@@ -127,13 +127,13 @@ A highly available, AWS-native containerized web application demonstrating moder
 
   Move worker nodes fully into private subnets with NAT or VPC endpoints
   
-  Add Ingress using AWS Load Balancer Controller (ALB)
+  Add Ingress using AWS Load Balancer Controller (ALB) - DONE
   
-  Enable HTTPS with TLS certificates
+  Enable HTTPS with TLS certificates - DONE
   
-  Add Horizontal Pod Autoscaling (HPA)
+  Add Horizontal Pod Autoscaling (HPA) - DONE
   
-  Add CloudWatch Container Insights
+  Add CloudWatch Container Insights - DONE
   
   Deploy a managed database (RDS) in private subnets
   

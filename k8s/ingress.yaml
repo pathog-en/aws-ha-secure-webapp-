@@ -23,6 +23,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: aws-ha-webapp-svc
+                name: aws-ha-webapp-stable-svc
                 port:
                   number: 80
