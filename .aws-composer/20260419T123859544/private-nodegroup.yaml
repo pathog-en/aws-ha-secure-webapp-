@@ -1,0 +1,39 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: aws-ha-secure-webapp-eks
+  region: us-east-2
+
+vpc:
+  id: vpc-0c78bea63aa9c650b
+  securityGroup: sg-003de88a2071767ab
+  subnets:
+    public:
+      us-east-2a:
+        id: subnet-044675df49cc4f7fb
+      us-east-2b:
+        id: subnet-0c477c21422233761
+    private:
+      us-east-2a:
+        id: subnet-0b53defe02c820d5d
+      us-east-2b:
+        id: subnet-0e28b71da1dddb99f
+
+managedNodeGroups:
+  - name: aws-ha-secure-webapp-private-ng
+    instanceType: t3.medium
+    amiFamily: AmazonLinux2023
+    desiredCapacity: 2
+    minSize: 2
+    maxSize: 4
+    privateNetworking: true
+    subnets:
+      - subnet-0b53defe02c820d5d
+      - subnet-0e28b71da1dddb99f
+    labels:
+      workload: app
+      nodegroup-type: private
+    tags:
+      Name: aws-ha-secure-webapp-private-ng
+      Project: aws-ha-secure-webapp
