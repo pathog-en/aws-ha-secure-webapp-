@@ -1,0 +1,29 @@
+{
+  "Name": "aws-ha-secure-webapp-waf",
+  "Scope": "REGIONAL",
+  "DefaultAction": { "Allow": {} },
+  "Description": "WAF for aws-ha-secure-webapp ALB",
+  "Rules": [
+    {
+      "Name": "AWS-AWSManagedRulesCommonRuleSet",
+      "Priority": 1,
+      "Statement": {
+        "ManagedRuleGroupStatement": {
+          "VendorName": "AWS",
+          "Name": "AWSManagedRulesCommonRuleSet"
+        }
+      },
+      "OverrideAction": { "None": {} },
+      "VisibilityConfig": {
+        "SampledRequestsEnabled": true,
+        "CloudWatchMetricsEnabled": true,
+        "MetricName": "AWSManagedRulesCommonRuleSet"
+      }
+    }
+  ],
+  "VisibilityConfig": {
+    "SampledRequestsEnabled": true,
+    "CloudWatchMetricsEnabled": true,
+    "MetricName": "aws-ha-secure-webapp-waf"
+  }
+}
