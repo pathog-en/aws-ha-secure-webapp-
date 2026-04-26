@@ -1,0 +1,49 @@
+@'
+[
+  {
+    "Name": "BlockBadPath",
+    "Priority": 0,
+    "Statement": {
+      "ByteMatchStatement": {
+        "SearchString": "/blocked",
+        "FieldToMatch": {
+          "UriPath": {}
+        },
+        "TextTransformations": [
+          {
+            "Priority": 0,
+            "Type": "NONE"
+          }
+        ],
+        "PositionalConstraint": "CONTAINS"
+      }
+    },
+    "Action": {
+      "Block": {}
+    },
+    "VisibilityConfig": {
+      "SampledRequestsEnabled": true,
+      "CloudWatchMetricsEnabled": true,
+      "MetricName": "BlockBadPath"
+    }
+  },
+  {
+    "Name": "AWS-AWSManagedRulesCommonRuleSet",
+    "Priority": 1,
+    "Statement": {
+      "ManagedRuleGroupStatement": {
+        "VendorName": "AWS",
+        "Name": "AWSManagedRulesCommonRuleSet"
+      }
+    },
+    "OverrideAction": {
+      "None": {}
+    },
+    "VisibilityConfig": {
+      "SampledRequestsEnabled": true,
+      "CloudWatchMetricsEnabled": true,
+      "MetricName": "AWSManagedRulesCommonRuleSet"
+    }
+  }
+]
+'@ | Set-Content -Encoding ascii rules.json

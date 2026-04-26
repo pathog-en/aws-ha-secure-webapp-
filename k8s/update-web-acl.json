@@ -1,0 +1,63 @@
+@'
+{
+  "Name": "aws-ha-secure-webapp-waf",
+  "Scope": "REGIONAL",
+  "Id": "ce73581b-5210-4e25-a10d-ed77a948d319",
+  "DefaultAction": {
+    "Allow": {}
+  },
+  "Rules": [
+    {
+      "Name": "BlockBadPath",
+      "Priority": 0,
+      "Statement": {
+        "ByteMatchStatement": {
+          "SearchString": "/blocked",
+          "FieldToMatch": {
+            "UriPath": {}
+          },
+          "TextTransformations": [
+            {
+              "Priority": 0,
+              "Type": "NONE"
+            }
+          ],
+          "PositionalConstraint": "CONTAINS"
+        }
+      },
+      "Action": {
+        "Block": {}
+      },
+      "VisibilityConfig": {
+        "SampledRequestsEnabled": true,
+        "CloudWatchMetricsEnabled": true,
+        "MetricName": "BlockBadPath"
+      }
+    },
+    {
+      "Name": "AWS-AWSManagedRulesCommonRuleSet",
+      "Priority": 1,
+      "Statement": {
+        "ManagedRuleGroupStatement": {
+          "VendorName": "AWS",
+          "Name": "AWSManagedRulesCommonRuleSet"
+        }
+      },
+      "OverrideAction": {
+        "None": {}
+      },
+      "VisibilityConfig": {
+        "SampledRequestsEnabled": true,
+        "CloudWatchMetricsEnabled": true,
+        "MetricName": "AWSManagedRulesCommonRuleSet"
+      }
+    }
+  ],
+  "VisibilityConfig": {
+    "SampledRequestsEnabled": true,
+    "CloudWatchMetricsEnabled": true,
+    "MetricName": "aws-ha-secure-webapp-waf"
+  },
+  "LockToken": "11d3dedf-e3a1-4cee-a50d-a211d09c84a7"
+}
+'@ | Set-Content -Encoding ascii .\update-web-acl.json
