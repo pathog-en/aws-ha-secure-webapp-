@@ -1,0 +1,33 @@
+app:
+  name: aws-ha-webapp
+  image: 698528536903.dkr.ecr.us-east-2.amazonaws.com/aws-ha-webapp:v1
+  port: 8000
+  replicas: 2
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  host: game.pathog-en.dev
+  certificateArn: ""
+  wafAclArn: ""
+  scheme: internet-facing
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  cpuUtilization: 60
+
+externalSecrets:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
