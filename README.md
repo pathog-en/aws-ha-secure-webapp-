@@ -143,5 +143,24 @@ A highly available, AWS-native containerized web application demonstrating moder
 - Image: aws-ha-webapp:45ac6a4a6b7d5f42aec5839fd5aed2b303949f82
 - Endpoints: /health, /game
 
+## Platform Engineering Layer
 
+This project now includes an Internal Developer Platform starter layer using Helm.
+
+The `golden-web-service` chart provides a reusable deployment pattern for web services on EKS, including:
+
+- Deployment
+- ClusterIP Service
+- Horizontal Pod Autoscaler
+- Optional Ingress
+- Optional External Secrets
+- ServiceAccount support
+
+The chart has been validated with:
+
+```powershell
+helm lint platform\helm\golden-web-service
+
+helm template aws-ha-webapp platform\helm\golden-web-service `
+  -f platform\examples\fastapi-service-values.yaml
 
