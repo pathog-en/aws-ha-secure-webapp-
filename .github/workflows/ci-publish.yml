@@ -1,0 +1,136 @@
+name: CI and Publish
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-east-2
+  AWS_ACCOUNT_ID: "698528536903"
+  ECR_REPOSITORY: aws-ha-webapp
+
+jobs:
+
+  #############################################
+  # Terraform validation
+  #############################################
+
+  terraform:
+    name: Validate Terraform
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Check Terraform formatting
+        run: terraform fmt -check -recursive terraform
+
+      - name: Validate network Terraform
+        run: |
+          terraform -chdir=terraform init -backend=false -input=false
+          terraform -chdir=terraform validate
+
+      - name: Validate EKS Terraform
+        run: |
+          terraform -chdir=terraform/eks init -backend=false -input=false
+          terraform -chdir=terraform/eks validate
+
+      - name: Validate ECR Terraform
+        run: |
+          terraform -chdir=terraform/ecr init -backend=false -input=false
+          terraform -chdir=terraform/ecr validate
+
+
+  #############################################
+  # Container validation
+  #############################################
+
+  container:
+    name: Build Container
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Build container
+        run: docker build -t aws-ha-webapp:ci .
+
+
+  #############################################
+  # Helm validation
+  #############################################
+
+  helm:
+    name: Validate Helm
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v5
+
+      - name: Lint Helm chart
+        run: helm lint platform/helm/golden-web-service
+
+      - name: Render Helm chart
+        run: |
+          helm template aws-ha-webapp \
+            platform/helm/golden-web-service \
+            -f platform/examples/fastapi-service-values.yaml
+
+
+  #############################################
+  # Publish validated image
+  #############################################
+
+  publish:
+    name: Publish to ECR
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    needs:
+      - terraform
+      - container
+      - helm
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::698528536903:role/gh-actions-ecr-push
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        run: |
+          ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+          IMAGE_TAG="${GITHUB_SHA}"
+          IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+
+          docker build -t "${IMAGE_URI}" .
+          docker push "${IMAGE_URI}"
+
+          echo "Pushed ${IMAGE_URI}"
