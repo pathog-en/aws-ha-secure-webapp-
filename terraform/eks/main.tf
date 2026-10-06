@@ -24,9 +24,9 @@ locals {
   project_name = var.project_name
   cluster_name = "${local.project_name}-eks"
 
-  vpc_id               = data.terraform_remote_state.network.outputs.vpc_id
-  public_subnet_ids    = data.terraform_remote_state.network.outputs.public_subnet_ids
-  private_app_subnets  = data.terraform_remote_state.network.outputs.private_app_subnet_ids
+  vpc_id              = data.terraform_remote_state.network.outputs.vpc_id
+  public_subnet_ids   = data.terraform_remote_state.network.outputs.public_subnet_ids
+  private_app_subnets = data.terraform_remote_state.network.outputs.private_app_subnet_ids
 
   # Put the EKS control plane in both public + private subnets
   cluster_subnet_ids = concat(local.public_subnet_ids, local.private_app_subnets)
@@ -39,9 +39,9 @@ resource "aws_iam_role" "eks_cluster_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Service = "eks.amazonaws.com" }
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 }
@@ -71,7 +71,7 @@ resource "aws_eks_cluster" "this" {
   role_arn = aws_iam_role.eks_cluster_role.arn
 
   vpc_config {
-  subnet_ids = local.cluster_subnet_ids
+    subnet_ids = local.cluster_subnet_ids
   }
 
 
@@ -87,9 +87,9 @@ resource "aws_iam_role" "eks_node_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Service = "ec2.amazonaws.com" }
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 }
@@ -114,7 +114,7 @@ resource "aws_eks_node_group" "this" {
   node_group_name = "${local.cluster_name}-ng"
   node_role_arn   = aws_iam_role.eks_node_role.arn
 
-# TEMP: Put nodes in PUBLIC subnets so they can reach EKS API without NAT
+  # TEMP: Put nodes in PUBLIC subnets so they can reach EKS API without NAT
   subnet_ids = local.public_subnet_ids
 
 

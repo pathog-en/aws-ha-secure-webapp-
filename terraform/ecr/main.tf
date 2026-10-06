@@ -24,7 +24,7 @@ resource "aws_ecr_repository" "this" {
 # Keep the last 30 images (adjust as you like)
 resource "aws_ecr_lifecycle_policy" "this" {
   repository = aws_ecr_repository.this.name
-  policy     = jsonencode({
+  policy = jsonencode({
     rules = [
       {
         rulePriority = 1
