@@ -192,4 +192,14 @@ helm lint platform\helm\golden-web-service
 
 helm template aws-ha-webapp platform\helm\golden-web-service `
   -f platform\examples\fastapi-service-values.yaml
+```
 
+## Configuration Ownership
+
+The repository uses clear ownership boundaries to avoid competing deployment definitions:
+
+- **Terraform** manages AWS infrastructure.
+- **Helm** defines the Kubernetes application workload.
+- **GitHub Actions** validates changes and publishes container images.
+
+Historical raw Kubernetes application manifests were retired after their required behavior was incorporated into the Helm chart.

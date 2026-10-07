@@ -4,6 +4,9 @@ app:
   port: 8000
   replicas: 2
 
+health:
+  path: /health
+
 service:
   type: ClusterIP
   port: 80
