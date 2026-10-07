@@ -23,6 +23,35 @@ A highly available, AWS-native containerized web application demonstrating moder
 <img width="1536" height="1024" alt="ChatGPT Image Jan 18, 2026, 02_30_40 PM" src="https://github.com/user-attachments/assets/a0bdd428-7699-4363-8eb8-67455719d972" />
 
 
+## Run Locally
+
+### Prerequisites
+
+- Python 3.12
+- Git
+
+### Start the application
+
+Create and activate a virtual environment:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+
+## Install Dependencies
+
+- pip install -r requirements.txt
+
+## Start the application
+
+- python -m uvicorn app.main.app -- host 127.0.0.1 --port 8000
+
+## Verify the Health Endpoint
+
+- curl http://127.0.0.1:8000/health
+
+- expected response -> {"status":"healthy"}
+
 🌍 High-Level Architecture (Current State)
 
   The application is deployed to a single AWS region.
