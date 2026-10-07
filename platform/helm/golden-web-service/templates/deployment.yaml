@@ -20,6 +20,22 @@ spec:
           image: {{ .Values.app.image }}
           ports:
             - containerPort: {{ .Values.app.port }}
+            
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.health.path }}
+              port: {{ .Values.app.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.health.path }}
+              port: {{ .Values.app.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            
+
           resources:
             requests:
               cpu: {{ .Values.resources.requests.cpu }}
