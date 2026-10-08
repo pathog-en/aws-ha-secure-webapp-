@@ -33,19 +33,19 @@ jobs:
         run: terraform fmt -check -recursive terraform
 
       - name: Initialize root Terraform
-        run: terraform -chdir=terraform init -backend=false -input=false
+        run: terraform -chdir=terraform init -backend=false -input=false -lockfile=readonly
 
       - name: Validate root Terraform
         run: terraform -chdir=terraform validate -no-color
 
       - name: Initialize ECR Terraform
-        run: terraform -chdir=terraform/ecr init -backend=false -input=false
+        run: terraform -chdir=terraform/ecr init -backend=false -input=false -lockfile=readonly
 
       - name: Validate ECR Terraform
         run: terraform -chdir=terraform/ecr validate -no-color
 
       - name: Initialize EKS Terraform
-        run: terraform -chdir=terraform/eks init -backend=false -input=false
+        run: terraform -chdir=terraform/eks init -backend=false -input=false -lockfile=readonly
 
       - name: Validate EKS Terraform
         run: terraform -chdir=terraform/eks validate -no-color
