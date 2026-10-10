@@ -222,6 +222,7 @@ The project demonstrates several security and reliability practices:
   ownership boundaries.
 
 ### Repository Structure
+```
 .
 ├── .github/
 │   └── workflows/
@@ -248,6 +249,7 @@ The project demonstrates several security and reliability practices:
 ├── Dockerfile
 ├── requirements.txt
 └── README.md
+```
 
 ### Cost and Lifecycle
 
