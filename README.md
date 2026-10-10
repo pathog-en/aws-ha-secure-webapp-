@@ -326,4 +326,4 @@ The repository uses clear ownership boundaries to avoid competing deployment def
 - **GitHub Actions** validates changes and publishes container images.
 
 Historical raw Kubernetes application manifests were retired after their required behavior was incorporated into the Helm chart.
->>>>>>> 082ae53 (Make Helm the canonical Kubernetes workload)
+
