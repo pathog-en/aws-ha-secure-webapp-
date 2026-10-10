@@ -1,195 +1,312 @@
-aws-ha-secure-webapp-
+# AWS HA Secure Web Application
 
-A highly available, AWS-native containerized web application demonstrating modern cloud infrastructure, security best practices, and CI/CD using Docker, Terraform, ECR, EKS, and GitHub Actions.
+A portfolio cloud/platform engineering project demonstrating how a small
+FastAPI application can be packaged, validated, and prepared for deployment
+to AWS using Terraform, Kubernetes, Helm, Amazon ECR, Amazon EKS, and
+GitHub Actions.
 
-📌 Project Summary
+The project emphasizes reproducibility, clear configuration ownership,
+least-privilege CI authentication, infrastructure validation, and
+cost-conscious operation rather than keeping an expensive demonstration
+environment running continuously.
 
-  This project shows how a simple web application can be containerized, deployed, and operated on AWS using managed services with an emphasis on:
-  
-  High availability across multiple Availability Zones
-  
-  Secure networking and IAM practices
-  
-  Infrastructure as Code (Terraform)
-  
-  Automated container builds and publishing (CI → ECR)
-  
-  Kubernetes-based application delivery (EKS)
-  
-  A live /health endpoint is exposed via an AWS-managed load balancer.
+## What This Project Demonstrates
 
-🗺 Architecture Diagram
+- Infrastructure as Code with Terraform
+- AWS VPC and Amazon EKS infrastructure
+- Containerized FastAPI application
+- Helm-based Kubernetes workload deployment
+- Kubernetes readiness and liveness probes
+- Horizontal Pod Autoscaling
+- GitHub Actions CI quality gates
+- AWS authentication from GitHub using OIDC
+- Amazon ECR image publishing using Git commit SHA tags
+- Terraform provider dependency locking
+- Reproducible local application startup
+- Separation of infrastructure, workload, and CI responsibilities
+- Cost-aware lifecycle management for cloud resources
 
-<img width="1536" height="1024" alt="ChatGPT Image Jan 18, 2026, 02_30_40 PM" src="https://github.com/user-attachments/assets/a0bdd428-7699-4363-8eb8-67455719d972" />
+## Architecture
 
+![AWS HA Secure Web Application architecture](diagrams/github-to-aws-eks-cicd-architecture.png)
+
+The project is designed around three primary ownership boundaries:
+
+```text
+Terraform
+    │
+    └── AWS infrastructure
+
+Helm
+    │
+    └── Kubernetes application workload
+
+GitHub Actions
+    │
+    └── validation and container publishing
+```
+
+The AWS environment uses the us-east-2 region.
+
+### Configuration Ownership
+
+The repository intentionally keeps each operational responsibility in one
+authoritative location.
+
+Responsibility	Source of Truth
+
+AWS infrastructure	terraform/
+EKS infrastructure	terraform/eks/
+ECR infrastructure	terraform/ecr/
+Kubernetes application workload	platform/helm/golden-web-service/
+Application dependencies	requirements.txt
+CI validation and image publishing	.github/workflows/ci-publish.yml
+Project lifecycle guidance	runbooks/PROJECT_LIFECYCLE.md
+
+
+This prevents historical experiments or duplicate configuration from becoming
+competing deployment paths.
 
 ## Run Locally
 
-### Prerequisites
-
+The application can be run locally without provisioning AWS resources.
+Prerequisites
 - Python 3.12
 - Git
 
-### Start the application
-
-Create and activate a virtual environment:
-
+## Create a virtual environment
 ```powershell
 python -m venv .venv
 .venv\Scripts\activate
+```
 
-## Install Dependencies
+## Install dependencies
+```powershell
+pip install -r requirements.txt
+```
 
-- pip install -r requirements.txt
+### Start the application
+```powershell
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
 
-## Start the application
+### Verify the health endpoint
+```powershell
+curl http://127.0.0.1:8000/health
+```
+Expected response:
+{"status":"healthy"}
 
-- python -m uvicorn app.main.app -- host 127.0.0.1 --port 8000
 
-## Verify the Health Endpoint
+The local application is then available at:
+- / — application home page
+- /health — health endpoint
+- /game — number guessing application
 
-- curl http://127.0.0.1:8000/health
+### Repository Validation
 
-- expected response -> {"status":"healthy"}
+The repository can be validated without provisioning AWS infrastructure.
 
-🌍 High-Level Architecture (Current State)
+### Terraform formatting
+```powershell
+terraform fmt -check -recursive terraform
+```
 
-  The application is deployed to a single AWS region.
-  
-  The region uses two Availability Zones (AZs) for high availability.
-  
-  A VPC spans both AZs and contains public and private subnets.
-  
-  Public subnets host:
-  
-  An AWS-managed load balancer created by Kubernetes
-  
-  Internet-facing traffic entry points
-  
-  Private subnets host:
-  
-  EKS worker nodes running application pods
-  
-  Amazon ECR stores container images built by CI.
-  
-  Amazon EKS orchestrates application workloads across nodes.
+### Terraform validation
 
-🔁 Traffic Flow
+Root infrastructure:
+```powershell
+terraform -chdir=terraform init -backend=false -input=false -lockfile=readonly
+terraform -chdir=terraform validate
+```
 
-  A user sends an HTTP request to the public load balancer.
-  
-  The load balancer forwards traffic to a Kubernetes Service.
-  
-  The Service routes requests to application pods running in EKS.
-  
-  The FastAPI application responds to the request (e.g. /health).
-  
-  All internal traffic remains inside the VPC.
+ECR infrastructure:
+```powershell
+terraform -chdir=terraform/ecr init -backend=false -input=false -lockfile=readonly
+terraform -chdir=terraform/ecr validate
+```
 
-🧩 Application Layer
+EKS infrastructure:
+```powershell
+terraform -chdir=terraform/eks init -backend=false -input=false -lockfile=readonly
+terraform -chdir=terraform/eks validate
+```
 
-  The application is a minimal FastAPI service running on Uvicorn.
-  
-  It exposes a /health endpoint used for:
-  
-  Load balancer health checks
-  
-  Kubernetes readiness and liveness probes
-  
-  The app is fully containerized and immutable at runtime.
+The committed .terraform.lock.hcl files provide deterministic provider
+selection and allow CI to use the same dependency decisions as local
+development.
 
-🐳 Container & Image Management
+Helm validation
+```powershell
+helm lint platform\helm\golden-web-service
+```
 
-  Docker is used to build a portable container image.
-  
-  Images are stored in Amazon ECR.
-  
-  Images are tagged using:
-  
-  A semantic tag (v1)
-  
-  The Git commit SHA (from CI)
+Render the Kubernetes manifests without deploying them:
+```powershell
+helm template aws-ha-webapp platform\helm\golden-web-service > NUL
+```
 
-🚀 CI/CD Pipeline
+### Container validation
 
-  GitHub Actions automatically runs on pushes to main.
-  
-  The pipeline:
-  
-  Builds the Docker image
-  
-  Authenticates to AWS using OIDC (no static credentials)
-  
-  Pushes the image to Amazon ECR
-  
-  Each build is traceable to a specific commit.
+The Docker image is built automatically by GitHub Actions as part of the CI
+quality gate.
 
-🔐 Security Considerations (Current)
+A pull request must successfully complete:
 
-  No long-lived AWS credentials are stored in GitHub.
-  
-  GitHub Actions uses OIDC + IAM role assumption.
-  
-  Kubernetes nodes use IAM roles with least privilege.
-  
-  Application containers do not require SSH access.
-  
-  Traffic enters only through the load balancer.
+Terraform validation
+        │
+Container build
+        │
+Helm validation
+        │
+        ▼
+      PASS
 
-📊 Monitoring & Health
+Only validated changes merged to main are eligible for the publishing stage.
 
-  Kubernetes health probes ensure failed pods are replaced automatically.
-  
-  The load balancer performs continuous health checks.
-  
-  Logs are available via kubectl logs for troubleshooting.
+CI/CD
+GitHub Actions provides separate validation and publishing responsibilities.
 
-💰 Cost Considerations
+Pull requests run:
+- Terraform formatting and validation
+- Container build validation
+- Helm linting and template rendering
 
-  This project prioritizes clarity and correctness over minimal cost.
-  
-  EKS and load balancers incur ongoing charges while running.
-  
-  Resources should be destroyed when not in use.
+Publishing occurs only after changes reach main and all required validation
+jobs have succeeded.
 
-🔮 Future Enhancements (Planned as of 01/18/2026)
+GitHub authenticates to AWS using OpenID Connect (OIDC), so long-lived AWS
+access keys are not stored in GitHub.
 
-  Move worker nodes fully into private subnets with NAT or VPC endpoints
-  
-  Add Ingress using AWS Load Balancer Controller (ALB) - DONE
-  
-  Enable HTTPS with TLS certificates - DONE
-  
-  Add Horizontal Pod Autoscaling (HPA) - DONE
-  
-  Add CloudWatch Container Insights - DONE
-  
-  Deploy a managed database (RDS) in private subnets
-  
-  Introduce blue/green or canary deployments
-  
-## Current Deployment (as of 01/20/2026)
-- Image: aws-ha-webapp:45ac6a4a6b7d5f42aec5839fd5aed2b303949f82
-- Endpoints: /health, /game
+The publishing job receives the AWS identity permission required to obtain
+temporary credentials; validation jobs do not require AWS authentication.
 
-## Platform Engineering Layer
+Container images published to Amazon ECR are tagged using the Git commit SHA,
+allowing an image to be traced back to the source revision that produced it.
 
-This project now includes an Internal Developer Platform starter layer using Helm.
+### Kubernetes Workload
 
-The `golden-web-service` chart provides a reusable deployment pattern for web services on EKS, including:
+The supported Kubernetes workload is defined by the Helm chart:
+platform/helm/golden-web-service/
 
+The chart provides:
 - Deployment
 - ClusterIP Service
 - Horizontal Pod Autoscaler
-- Optional Ingress
-- Optional External Secrets
-- ServiceAccount support
+- Readiness probe
+- Liveness probe
+- Optional ALB Ingress
+- Optional External Secret support
+- ServiceAccount configuration
+- CPU and memory requests and limits
 
-The chart has been validated with:
+Historical raw Kubernetes deployment manifests were retired after the required
+behavior was incorporated into the Helm chart.
 
-```powershell
-helm lint platform\helm\golden-web-service
+### Security and Reliability
 
-helm template aws-ha-webapp platform\helm\golden-web-service `
-  -f platform\examples\fastapi-service-values.yaml
+The project demonstrates several security and reliability practices:
 
+- GitHub Actions uses AWS OIDC rather than long-lived credentials.
+- AWS identity permissions are limited to the jobs that require them.
+- The application container runs as a non-root user.
+- Kubernetes workloads define CPU and memory requests and limits.
+- Kubernetes readiness and liveness probes use /health.
+- Horizontal Pod Autoscaling is supported through the Helm chart.
+- Terraform state files and local Terraform working directories are excluded
+  from source control.
+- Terraform provider versions are constrained and dependency selections are
+  committed through lock files.
+- AWS infrastructure and Kubernetes workload configuration have separate
+  ownership boundaries.
+
+### Repository Structure
+.
+├── .github/
+│   └── workflows/
+│       └── ci-publish.yml
+│
+├── app/
+│   └── main.py
+│
+├── diagrams/
+│   └── github-to-aws-eks-cicd-architecture.png
+│
+├── platform/
+│   ├── examples/
+│   └── helm/
+│       └── golden-web-service/
+│
+├── runbooks/
+│   └── PROJECT_LIFECYCLE.md
+│
+├── terraform/
+│   ├── ecr/
+│   └── eks/
+│
+├── Dockerfile
+├── requirements.txt
+└── README.md
+
+### Cost and Lifecycle
+
+The AWS environment is intentionally not kept running continuously.
+Amazon EKS, worker nodes, load balancers, networking components, and other
+managed AWS services may generate ongoing charges while deployed. Local
+application execution and CI configuration validation are therefore the
+preferred review path.
+Creating AWS infrastructure is not required to review or validate this project.
+
+### Before provisioning infrastructure:
+
+1. Review the Terraform configuration.
+2. Run terraform plan.
+3. Review the expected resources and potential cost.
+4. Apply infrastructure only when a live demonstration environment is needed.
+5. Review infrastructure again before destroying resources.
+
+See:
+runbooks/PROJECT_LIFECYCLE.md
+
+for lifecycle and validation guidance.
+
+### Deployment Status
+
+The cloud environment should be considered ephemeral rather than permanently
+hosted.
+The repository is intended to demonstrate a reproducible architecture and
+engineering workflow without requiring the associated AWS resources to remain
+online continuously.
+As a result, public application endpoints referenced in project history may not
+currently be available.
+Current Scope
+This repository represents the current supported implementation of the project.
+
+Earlier iterations explored additional capabilities including:
+- Blue/green deployment using Argo Rollouts
+- AWS WAF configuration
+- AWS Secrets Manager and External Secrets integration
+- Alternative EKS node-placement strategies
+- Additional private-network connectivity patterns
+Those experiments remain visible in Git history but are not retained as
+competing current configuration when they are not part of the supported
+deployment path.
+The goal of the final repository is not to preserve every experiment as active
+configuration. It is to provide one understandable, reproducible, and
+reviewable implementation.
+
+### Project Evolution
+
+The project evolved from an AWS architecture exercise into a broader
+cloud/platform engineering portfolio project.
+
+Later modernization work focused less on adding services and more on improving
+engineering quality:
+- adding CI quality gates before publishing
+- establishing a reproducible local execution path
+- removing competing Kubernetes deployment definitions
+- establishing clear configuration ownership
+- locking Terraform provider dependencies
+- removing stale operational artifacts
+- aligning documentation with the supported implementation
+This history remains available through the Git commit and pull request history.   
