@@ -311,7 +311,8 @@ engineering quality:
 - removing stale operational artifacts
 - aligning documentation with the supported implementation
 This history remains available through the Git commit and pull request history.   
-=======
+======
+```powershell
 helm template aws-ha-webapp platform\helm\golden-web-service `
   -f platform\examples\fastapi-service-values.yaml
 ```
