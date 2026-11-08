@@ -205,7 +205,6 @@ behavior was incorporated into the Helm chart.
 
 ### Security and Reliability
 
-<<<<<<< HEAD
 The project demonstrates several security and reliability practices:
 
 - GitHub Actions uses AWS OIDC rather than long-lived credentials.
